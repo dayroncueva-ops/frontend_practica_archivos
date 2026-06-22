@@ -1,22 +1,37 @@
-import {createContext, useState} from 'react'
+import { createContext, useState, useEffect, type ReactNode } from "react"
 
-export const AuthContext = createContext(null);
-
-export function AuthProvider ({children}) {
-
-    // los variables a heredar a los componentes
-    const [email,setEmail] = useState (localStorage.getItem("email")||nulll); 
-
-    const login = (userEmail) => { third }
-
-    return ( 
-        <AuthContext.Provider
-            value = {{email}}>
-                {children}
-            </AuthContext.Provider>
-    )
-
+type AuthContextType = {
+  email: string | null
+  login: (userEmail: string) => void
+  logout: () => void
 }
 
-// todo lo de value es lo q componentes hijos pueden leer y usar con useContext(AuthContext)
-// componentes como Perfil, Navbar...
+export const AuthContext = createContext<AuthContextType | null>(null)
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [email, setEmail] = useState<string | null>(null)
+
+  // hidratar desde localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem("email")
+    if (saved) {
+      setEmail(saved)
+    }
+  }, [])
+
+  const login = (userEmail: string) => {
+    setEmail(userEmail)
+    localStorage.setItem("email", userEmail)
+  }
+
+  const logout = () => {
+    setEmail(null)
+    localStorage.removeItem("email")
+  }
+
+  return (
+    <AuthContext.Provider value={{ email, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  )
+}
